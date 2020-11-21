@@ -1,11 +1,15 @@
 import { IncomingMessage } from 'http';
 import { parse } from 'url';
+import querystring from 'querystring';
 import { ParsedRequest } from './types';
 
 export function parseRequest(req: IncomingMessage) {
     console.log('HTTP ' + req.url);
-    const { pathname, query } = parse(req.url || '/', true);
-    const { subtitle, color, image, width, height, theme, md, backgroundImage } = (query || {});
+    
+    const { pathname, query } = parse(req.url || '/');
+    const parsedQuery = querystring.parse(decodeURIComponent(query || ""))
+
+    const { subtitle, color, image, width, height, theme, md, backgroundImage } = (parsedQuery || {});
 
     if (Array.isArray(subtitle)) {
         throw new Error('Expected a single subtitle');
