@@ -84,7 +84,7 @@ function getCss(theme: string, backgroundImage: string, color: string) {
         -webkit-box-sizing: border-box;
         width: 100%;
         height: 100%;
-        border-top: 100px solid ${sanitizeHtml(color)};
+        border-top: 300px solid ${sanitizeHtml(color)};
         display: flex;
         padding: 40px;
         align-items: center;
