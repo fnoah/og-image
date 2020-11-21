@@ -1,7 +1,7 @@
 
 import { readFileSync } from 'fs';
 import marked from 'marked';
-import { sanitizeHtml } from './sanitizer';
+import { sanitizeHtml, sanitizeUrl } from './sanitizer';
 import { ParsedRequest } from './types';
 const twemoji = require('twemoji');
 const twOptions = { folder: 'svg', ext: '.svg' };
@@ -11,13 +11,14 @@ const rglr = readFileSync(`${__dirname}/../_fonts/Inter-Regular.woff2`).toString
 const bold = readFileSync(`${__dirname}/../_fonts/Inter-Bold.woff2`).toString('base64');
 const mono = readFileSync(`${__dirname}/../_fonts/Vera-Mono.woff2`).toString('base64');
 
-function getCss(theme: string, fontSize: string, backgroundImage: string) {
-    let background = 'white';
-    let foreground = 'black';
+function getCss(theme: string, backgroundImage: string, color: string) {
+    console.log(backgroundImage)
+    let foreground = 'white';
+    let background = '#10202C';
 
-    if (theme === 'dark') {
-        background = 'black';
-        foreground = 'white';
+    if (theme === 'light') {
+        foreground = 'black';
+        background = 'white';
     }
 
     return `
@@ -42,15 +43,14 @@ function getCss(theme: string, fontSize: string, backgroundImage: string) {
         src: url(data:font/woff2;charset=utf-8;base64,${mono})  format("woff2");
       }
 
+    html, body {
+        height: 100vh;
+        margin: 0;
+    }
+
     body {
         background: ${background};
-        background-image: url(${backgroundImage});
-        background-size: 100px 100px;
-        height: 100vh;
-        display: flex;
-        text-align: center;
-        align-items: center;
-        justify-content: center;
+        background-image: url(${sanitizeUrl(backgroundImage)})
     }
 
     code {
@@ -62,14 +62,6 @@ function getCss(theme: string, fontSize: string, backgroundImage: string) {
 
     code:before, code:after {
         content: '\`';
-    }
-
-    .logo-wrapper {
-        display: flex;
-        align-items: center;
-        align-content: center;
-        justify-content: center;
-        justify-items: center;
     }
 
     .logo {
@@ -86,6 +78,24 @@ function getCss(theme: string, fontSize: string, backgroundImage: string) {
         margin: 150px;
     }
 
+    .wrapper {
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+        border-top: 25px solid ${sanitizeHtml(color)};
+        display: flex;
+        padding: 40px;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .footer-wrapper {
+        display: flex;
+        justify-content: flex-end;
+    }
+
     .emoji {
         height: 1em;
         width: 1em;
@@ -95,40 +105,59 @@ function getCss(theme: string, fontSize: string, backgroundImage: string) {
     
     .heading {
         font-family: 'Inter', sans-serif;
-        font-size: ${sanitizeHtml(fontSize)};
+        font-size: 100px;
         font-style: normal;
         color: ${foreground};
-        line-height: 1.8;
+        line-height: 1.5;
+    }
+
+    .subheading {
+        font-family: 'Inter', sans-serif;
+        font-size: 50px;
+        font-style: normal;
+        color: ${foreground};
+    }
+    
+    .text{
+        margin-left: 50px;
     }`;
 }
 
 export function getHtml(parsedReq: ParsedRequest) {
-    const { text, theme, md, fontSize, image, backgroundImage, width, height } = parsedReq;
+    const { text, subtitle, color, theme, md, image, backgroundImage, width, height } = parsedReq;
     return `<!DOCTYPE html>
 <html>
     <meta charset="utf-8">
     <title>Generated Image</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        ${getCss(theme, fontSize, backgroundImage)}
+        ${getCss(theme, backgroundImage, color)}
     </style>
     <body>
-        <div>
-            <div class="spacer">
-            <div class="logo-wrapper">
-                ${getImage(image, width, height)}
+        <div class="wrapper">
+            <div class="text">
+                <div class="heading">
+                ${emojify(
+                    md ? marked(text) : sanitizeHtml(text)
+                )}
+                </div>
+                <div class="subheading">
+                    ${emojify(
+                        md ? marked(subtitle) : sanitizeHtml(subtitle)
+                    )}
+                </div>
             </div>
-            <div class="spacer">
-            <div class="heading">${emojify(
-                md ? marked(text) : sanitizeHtml(text)
-            )}
+            <div class="footer-wrapper">
+                ${getImage(image, width, height)}
             </div>
         </div>
     </body>
 </html>`;
 }
 
-function getImage(src: string, width ='auto', height = '225') {
+function getImage(src: string, width ='auto', height = '450') {
+    if(!src) return null
+
     return `<img
         class="logo"
         alt="Generated Image"

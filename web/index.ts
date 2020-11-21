@@ -74,15 +74,6 @@ const TextInput = ({ value, oninput }: TextInputProps) => {
     );
 }
 
-// interface ButtonProps {
-//     label: string;
-//     onclick: () => void;
-// }
-
-// const Button = ({ label, onclick }: ButtonProps) => {
-//     return H('button', { onclick }, label);
-// }
-
 interface FieldProps {
     label: string;
     input: any;
@@ -130,29 +121,11 @@ const fileTypeOptions: DropdownOption[] = [
     { text: 'JPEG', value: 'jpeg' },
 ];
 
-const fontSizeOptions: DropdownOption[] = Array
-    .from({ length: 10 })
-    .map((_, i) => i * 25)
-    .filter(n => n > 0)
-    .map(n => ({ text: n + 'px', value: n + 'px' }));
-
 const markdownOptions: DropdownOption[] = [
     { text: 'Plain Text', value: '0' },
     { text: 'Markdown', value: '1' },
 ];
 
-// const imageLightOptions: DropdownOption[] = [
-//     { text: 'Vercel', value: 'https://assets.vercel.com/image/upload/front/assets/design/vercel-triangle-black.svg' },
-//     { text: 'Next.js', value: 'https://assets.vercel.com/image/upload/front/assets/design/nextjs-black-logo.svg' },
-//     { text: 'Hyper', value: 'https://assets.vercel.com/image/upload/front/assets/design/hyper-color-logo.svg' },
-// ];
-
-// const imageDarkOptions: DropdownOption[] = [
-
-//     { text: 'Vercel', value: 'https://assets.vercel.com/image/upload/front/assets/design/vercel-triangle-white.svg' },
-//     { text: 'Next.js', value: 'https://assets.vercel.com/image/upload/front/assets/design/nextjs-white-logo.svg' },
-//     { text: 'Hyper', value: 'https://assets.vercel.com/image/upload/front/assets/design/hyper-bw-logo.svg' },
-// ];
 
 const widthOptions = [
     { text: 'width', value: 'auto' },
@@ -180,9 +153,12 @@ interface AppState extends ParsedRequest {
     loading: boolean;
     showToast: boolean;
     messageToast: string;
+    title: string;
+    subtitle: string;
     width: string;
     height: string;
     image: string;
+    color: string;
     backgroundImage: string;
     overrideUrl: URL | null;
 }
@@ -203,11 +179,12 @@ const App = (_: any, state: AppState, setState: SetState) => {
     };
     const {
         fileType = 'png',
-        fontSize = '100px',
         theme = 'light',
         md = true,
-        text = '**Hello** World',
+        title = '**Hello** World',
+        subtitle = 'yourblog.com',
         image = 'https://cdn.jsdelivr.net/gh/remojansen/logo.ts@master/ts.svg',
+        color = '#f6416c',
         width = null,
         height = null,
         showToast = false,
@@ -218,11 +195,12 @@ const App = (_: any, state: AppState, setState: SetState) => {
     } = state;
     const mdValue = md ? '1' : '0';
     const url = new URL(window.location.origin);
-    url.pathname = `${encodeURIComponent(text)}.${fileType}`;
+    url.pathname = `${encodeURIComponent(title)}.${fileType}`;
     url.searchParams.append('theme', theme);
     url.searchParams.append('md', mdValue);
-    url.searchParams.append('fontSize', fontSize);
+    url.searchParams.append('subtitle', subtitle);
     url.searchParams.append('image', image);
+    url.searchParams.append('color', color);
     if(backgroundImage && backgroundImage.length != 0) url.searchParams.append('backgroundImage', backgroundImage);
     if(width) url.searchParams.append('width', width);
     if(height) url.searchParams.append('height', height);
@@ -249,14 +227,6 @@ const App = (_: any, state: AppState, setState: SetState) => {
                     })
                 }),
                 H(Field, {
-                    label: 'Font Size',
-                    input: H(Dropdown, {
-                        options: fontSizeOptions,
-                        value: fontSize,
-                        onchange: (val: string) => setLoadingState({ fontSize: val })
-                    })
-                }),
-                H(Field, {
                     label: 'Text Type',
                     input: H(Dropdown, {
                         options: markdownOptions,
@@ -265,11 +235,20 @@ const App = (_: any, state: AppState, setState: SetState) => {
                     })
                 }),
                 H(Field, {
-                    label: 'Text Input',
+                    label: 'Title',
                     input: H(TextInput, {
-                        value: text,
+                        value: title,
                         oninput: (val: string) => {
-                            setLoadingState({ text: val, overrideUrl: url });
+                            setLoadingState({ title: val, overrideUrl: url });
+                        }
+                    })
+                }),
+                H(Field, {
+                    label: 'Subtitle',
+                    input: H(TextInput, {
+                        value: subtitle,
+                        oninput: (val: string) => {
+                            setLoadingState({ subtitle: val, overrideUrl: url });
                         }
                     })
                 }),
@@ -279,6 +258,15 @@ const App = (_: any, state: AppState, setState: SetState) => {
                         value: backgroundImage,
                         oninput: (val: string) => {
                             setLoadingState({ backgroundImage: val, overrideUrl: url });
+                        }
+                    })
+                }),
+                H(Field, {
+                    label: 'Accent color',
+                    input: H(TextInput, {
+                        value: color,
+                        oninput: (val: string) => {
+                            setLoadingState({ color: val, overrideUrl: url });
                         }
                     })
                 }),

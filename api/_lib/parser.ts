@@ -5,10 +5,13 @@ import { ParsedRequest } from './types';
 export function parseRequest(req: IncomingMessage) {
     console.log('HTTP ' + req.url);
     const { pathname, query } = parse(req.url || '/', true);
-    const { fontSize, image, width, height, theme, md, backgroundImage } = (query || {});
+    const { subtitle, color, image, width, height, theme, md, backgroundImage } = (query || {});
 
-    if (Array.isArray(fontSize)) {
-        throw new Error('Expected a single fontSize');
+    if (Array.isArray(subtitle)) {
+        throw new Error('Expected a single subtitle');
+    }
+    if (Array.isArray(color)) {
+        throw new Error('Expected a single accent color');
     }
     if (Array.isArray(theme)) {
         throw new Error('Expected a single theme');
@@ -43,36 +46,13 @@ export function parseRequest(req: IncomingMessage) {
         text: decodeURIComponent(text),
         theme: theme === 'dark' ? 'dark' : 'light',
         md: md === '1' || md === 'true',
-        fontSize: fontSize || '96px',
+        color: color.match(/^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/) ? color : '#f6416c',
+        subtitle,
         image,
         width,
         height,
         backgroundImage
     };
-    // parsedRequest.images = getDefaultImages(parsedRequest.images, parsedRequest.theme);
+    
     return parsedRequest;
 }
-
-// function getArray(stringOrArray: string[] | string | undefined): string[] {
-//     if (typeof stringOrArray === 'undefined') {
-//         return [];
-//     } else if (Array.isArray(stringOrArray)) {
-//         return stringOrArray;
-//     } else {
-//         return [stringOrArray];
-//     }
-// }
-
-// function getDefaultImages(images: string[], theme: Theme): string[] {
-//     const defaultImage = theme === 'light'
-//         ? 'https://assets.vercel.com/image/upload/front/assets/design/vercel-triangle-black.svg'
-//         : 'https://assets.vercel.com/image/upload/front/assets/design/vercel-triangle-white.svg';
-
-//     if (!images || !images[0]) {
-//         return [defaultImage];
-//     }
-//     if (!images[0].startsWith('https://assets.vercel.com/') && !images[0].startsWith('https://assets.zeit.co/')) {
-//         images[0] = defaultImage;
-//     }
-//     return images;
-// }
